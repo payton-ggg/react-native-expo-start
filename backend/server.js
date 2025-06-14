@@ -27,26 +27,30 @@ async function initDB() {
   }
 }
 
-app.post("/api/transactions"),
-  async (req, res) => {
-    try {
-      const { title, amount, category, user_id } = req.body;
+app.get("/", (req, res) => {
+  res.send("Hello World");
+});
 
-      if (!title || !amount || !category || !user_id) {
-        return res.status(400).json({ message: "All fields are required" });
-      }
+app.post("/api/transactions", async (req, res) => {
+  try {
+    const { title, amount, category, user_id } = req.body;
 
-      const transaction = await sql`
-      INSERT INTO transactions (title, amount, category, user_id) 
-      VALUES (${title}, ${amount}, ${category}, ${user_id})
-      RETURNING *`;
-
-      res.status(201).json(transaction[0]);
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: "Something went wrong" });
+    if (!title || amount === undefined || !category || !user_id) {
+      return res.status(400).json({ message: "All fields are required" });
     }
-  };
+
+    const transaction = await sql`
+      INSERT INTO transactions (user_id, title, category,amount ) 
+      VALUES (${user_id}, ${title}, ${category}, ${amount})
+      RETURNING *
+      `;
+
+    res.status(201).json(transaction[0]);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
 
 initDB().then(() => {
   app.listen(5001, () => {
