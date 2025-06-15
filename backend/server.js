@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotend from "dotenv";
 import { initDB, sql } from "./config/db.js";
+import rateLimit from "express-rate-limit";
+import voteLimiter from "./middleware/voteLimiter.js";
 
 dotend.config();
 
@@ -13,7 +15,7 @@ app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
-app.get("/api/transactions/:user_id", async (req, res) => {
+app.get("/api/transactions/:user_id", voteLimiter, async (req, res) => {
   try {
     const { user_id } = req.params;
 
@@ -30,7 +32,7 @@ app.get("/api/transactions/:user_id", async (req, res) => {
   }
 });
 
-app.post("/api/transactions", async (req, res) => {
+app.post("/api/transactions", voteLimiter, async (req, res) => {
   try {
     const { title, amount, category, user_id } = req.body;
 
@@ -51,7 +53,7 @@ app.post("/api/transactions", async (req, res) => {
   }
 });
 
-app.delete("/api/transactions/:id", async (req, res) => {
+app.delete("/api/transactions/:id", voteLimiter, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -76,7 +78,7 @@ app.delete("/api/transactions/:id", async (req, res) => {
   }
 });
 
-app.get("/api/transactions/summary/:user_id", async(req, res) => {
+app.get("/api/transactions/summary/:user_id", voteLimiter, async(req, res) => {
   try {
     const { user_id } = req.params;
 
