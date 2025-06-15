@@ -76,6 +76,30 @@ app.delete("/api/transactions/:id", async (req, res) => {
   }
 });
 
+app.get("/api/transactions/summary/:user_id", async(req, res) => {
+  try {
+    const { user_id } = req.params;
+
+    const balanceResult = await sql`
+      SELECT COALESCE(SUM(amount), 0) AS balance FROM transactions WHERE user_id = ${user_id}`;
+
+    const incomeResult = await sql`
+    SELECT COALESCE(SUM(amount), 0) AS income FROM transactions WHERE user_id = ${user_id} AND amount > 0`;
+
+    const expenseResult = await sql`
+    SELECT COALESCE(SUM(amount), 0) AS expense FROM transactions WHERE user_id = ${user_id} AND amount < 0`;
+
+    res.status(200).json({
+      balance: balanceResult[0].balance,
+      income: incomeResult[0].income,
+      expense: expenseResult[0].expense
+    })
+} catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Getting summary failed" });
+  }
+})
+
 initDB().then(() => {
   app.listen(5001, () => {
     console.log("Server is running on port http://localhost:5001");
